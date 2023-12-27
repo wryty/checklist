@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Checklist;
 use Illuminate\Http\Request;
 use App\Models\ChecklistItem;
+use App\Models\ChecklistSubitem;
 class ChecklistController extends Controller
 {
 
@@ -53,12 +54,14 @@ class ChecklistController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
         $checklist = Checklist::findOrFail($checklistId);
 
         $item = $checklist->items()->create([
             'name' => $request->input('name'),
+            'description' => $request->input('description'),
         ]);
 
         return back()->with('success', 'Item created successfully!');
@@ -67,9 +70,13 @@ class ChecklistController extends Controller
     public function destroy($id)
     {
         $checklist = Checklist::findOrFail($id);
+        $checklistItems = $checklist->items();
+        foreach ($checklistItems as $item) {
+            $item->delete();
+        }
         $checklist->delete();
 
-        return redirect()->route('checklists.index')->with('success', 'Checklist deleted successfully!');
+        return redirect()->route('dashboard')->with('success', 'Checklist deleted successfully!');
     }
 
     public function destroyItem($checklistId, $itemId)
@@ -78,6 +85,44 @@ class ChecklistController extends Controller
         $item->delete();
 
         return back()->with('success', 'Item deleted successfully!');
+    }
+
+    public function showSubitems($checklistId, $itemId)
+    {
+        $checklist = Checklist::findOrFail($checklistId);
+        $item = ChecklistItem::findOrFail($itemId);
+        return view('checklists.subitems.show', compact('checklist', 'item'));
+    }
+
+    public function storeSubitem(Request $request, $checklistId, $itemId)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $item = ChecklistItem::findOrFail($itemId);
+
+        $subitem = $item->subItems()->create([
+            'name' => $request->input('name'),
+        ]);
+
+        return back()->with('success', 'Subitem created successfully!');
+    }
+
+    public function toggleSubitem($checklistId, $itemId, $subitemId)
+    {
+        $subitem = ChecklistSubitem::findOrFail($subitemId);
+        $subitem->update(['completed' => !$subitem->completed]);
+
+        return back()->with('success', 'Subitem updated successfully!');
+    }
+
+    public function destroySubitem($checklistId, $itemId, $subitemId)
+    {
+        $subitem = ChecklistSubitem::findOrFail($subitemId);
+        $subitem->delete();
+
+        return back()->with('success', 'Subitem deleted successfully!');
     }
 }
 

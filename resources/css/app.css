@@ -1,4 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import '~@fortawesome/fontawesome-free/css/all.css';
+.checklist-items {
+
+}
+
+.checkbox-toggle {
+
+}
+
+.subitems {
+    margin-left: 2em;
+}

@@ -20,14 +20,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Оставим только один из вариантов маршрута /dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Используем представление 'dashboard' через анонимную функцию
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Или используем метод контроллера 'index' для /dashboard
     Route::get('/dashboard', [ChecklistController::class, 'index'])->name('dashboard');
 });
 
@@ -49,5 +46,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/checklists/{id}', [ChecklistController::class, 'destroy'])->name('checklists.destroy');
     Route::delete('/checklists/{checklistId}/items/{itemId}', [ChecklistController::class, 'destroyItem'])->name('checklists.items.destroy');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checklists/{checklistId}/items/{itemId}', [ChecklistController::class, 'showItem'])->name('checklists.items.show');
+
+    Route::post('/checklists/{checklistId}/items/{itemId}/subitems/{subitemId}/toggle', [ChecklistController::class, 'toggleSubitem'])->name('checklists.items.subitems.toggle');
+
+    Route::post('/checklists/{checklistId}/items/{itemId}/subitems', [ChecklistController::class, 'storeSubitem'])->name('checklists.items.subitems.store');
+
+    Route::delete('/checklists/{checklistId}/items/{itemId}/subitems/{subitemId}', [ChecklistController::class, 'destroySubitem'])->name('checklists.items.subitems.destroy');
+});
+
 
 require __DIR__.'/auth.php';
